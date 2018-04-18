@@ -7,14 +7,21 @@ using System.Threading;
 
 namespace RefOutCheckUp
 {
-    class Program
+    internal class Program : Malta, IMalta
     {
         public static void Main(string[] args)
-        {
+        {            
             awaitSpain();
             awaitItaly();
 
             ReadLine();
+        }
+
+        dynamic IMalta.Island { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        dynamic IMalta.GetCapital()
+        {
+            throw new NotImplementedException();
         }
 
         private protected static ThreadStart awaitSpain = async () => 
@@ -24,50 +31,48 @@ namespace RefOutCheckUp
                 await Run(() =>
                 {
                     spain.Madrid(ref x, ref y);
-                    WriteLine($"{nameof(x)} has now become: {x}");
-                    WriteLine($"{nameof(y)} has now become: {y}");
-                });
-            }
-
-            using (var spain = new Spain())
-            {
-                await Run(() => {
+                    WriteLine($"{nameof(spain.Madrid)} |> {nameof(x)} has now become: {x} and {nameof(y)} has now become: {y}");
+                })
+                .ContinueWith(nextTask => {
                     spain.Barcelona(ref x, ref y);
-                    WriteLine($"{nameof(x)} has now become: {x}");
-                    WriteLine($"{nameof(y)} has now become: {y}");
+                    WriteLine($"{nameof(spain.Barcelona)} |> {nameof(x)} has now become: {x} and {nameof(y)} has now become: {y}");
                 });
-            }
+            }            
         };
 
         private protected static ThreadStart awaitItaly = async () => 
         {
             using (var italy = new Italy())
             {
-                await Run(() => {
+                await Run(() =>
+                {
                     italy.Rome(x, y);
-                    WriteLine($"{nameof(x)} has now become: {x}");
-                    WriteLine($"{nameof(y)} has now become: {y}");
-                });
-            }
-
-            using (var italy = new Italy())
-            {
-                await Run(() => {
+                    WriteLine($"{nameof(italy.Rome)} |> {nameof(x)} has now become: {x} and {nameof(y)} has now become: {y}");
+                })
+                .ContinueWith(nextTask =>
+                {
                     italy.Milan(x, y, out var cValue);
-                    WriteLine($"{nameof(x)} has now become: {x}");
-                    WriteLine($"{nameof(y)} has now become: {y}");
-                });
-            }
-
-            using (var italy = new Italy())
-            {
-                await Run(() => {
+                    WriteLine($"{nameof(italy.Milan)} |> {nameof(x)} has now become: {x} and {nameof(y)} has now become: {y}");
+                })
+                .ContinueWith(nextTask =>
+                {
                     italy.SanRemo(ref x, ref y, out var cValue);
-                    WriteLine($"{nameof(x)} has now become: {x}");
-                    WriteLine($"{nameof(y)} has now become: {y}");
+                    WriteLine($"{nameof(italy.SanRemo)} |> {nameof(x)} has now become: {x} and {nameof(y)} has now become: {y}");
                 });
             }
         };
+    }
+
+    internal abstract class Malta
+    {
+        public object Island { get; set; } = "Island";
+        object GetCapital() => null;
+    }
+
+    public interface IMalta
+    {
+        dynamic Island { get; set; }
+        dynamic GetCapital();
     }
 
     internal class Spain : IDisposable
